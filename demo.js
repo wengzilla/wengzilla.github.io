@@ -1,5 +1,6 @@
 (function() {
-  var canvas = document.getElementById('canvas'), context = canvas.getContext('2d');
+  var canvas = document.getElementById('canvas')
+  var context = canvas.getContext('2d');
 
   // resize the canvas to fill browser window dynamically
   window.addEventListener('resize', resizeCanvas, false);
@@ -15,6 +16,14 @@
           draw(); 
   }
   resizeCanvas();
+
+  function addText() {
+    context.font = "30px Arial";
+    if (polygon == null) {
+      context.fillText("Click to draw a polygon!",100,100);
+    }
+  }
+  addText();
 
   function clickListener(e) {
     var x = e.x, y = e.y;
@@ -42,8 +51,10 @@
     draw();
     if (polygon.contains(cursorPosition)) {
       context.fillStyle = "#FF0000";
+      context.fillText("You are in!",100,100);
     } else {
       context.fillStyle = "#0000FF";
+      context.fillText("You are out!",100,100);
     }
     cursorPosition.draw(context);
   }
@@ -136,6 +147,8 @@
 
   function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
+
+    addText();
 
     points.forEach(function(point) {
       context.fillStyle = "#000"
