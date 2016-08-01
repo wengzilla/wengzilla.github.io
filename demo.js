@@ -38,6 +38,12 @@
       canvas.addEventListener("mousemove", mouseMoveListener);
       canvas.addEventListener("mouseup", mouseUpListener);
       canvas.removeEventListener("click", clickListener);
+
+      str = ""
+      edges.forEach(function(edge) {
+        str += edge.toString() + " "
+      })
+      console.log(str)
     } else {
       points.push(new Point(x, y));
     }
@@ -108,6 +114,9 @@
       onDrag: function(x, y) {
         this.x = x;
         this.y = y;
+      },
+      toString: function() {
+        return "(" + x + ", " + y + ")";
       }
     };
   }
@@ -121,9 +130,9 @@
         return Point((p.x + q.x) / 2, (p.y + q.y) / 2);
       },
       contains: function(point) {
-        point.x <= Math.max(p.x, q.x) && point.x >= Math.min(p.x, q.x) &&
-            point.y <= Math.max(p.y, q.y) && point.y >= Math.min(p.y, q.y) &&
-            this._orientation(p, q, point) == 0
+        point.x < Math.max(p.x, q.x) && point.x > Math.min(p.x, q.x) &&
+          point.y < Math.max(p.y, q.y) && point.y > Math.min(p.y, q.y) &&
+          this._orientation(p, q, point) == 0
       },
       draw: function(context) {
         context.beginPath();
@@ -157,9 +166,32 @@
 
         return o1 != o2 && o3 != o4
       },
+      intersectsVertex: function(ray) {
+        if (ray.p.y !== ray.q.y) {
+          throw "Ray is not a horizontal line"
+        }
+
+        if (this.p.y == ray.p.y) {
+          return this.q
+        } else if (this.q.y == ray.p.y) {
+          return this.p
+        } else {
+          return null
+        }
+      },
+      isAbove: function(point) {
+        if (this.p.y !== this.q.y) {
+          throw "Ray is not a horizontal line"
+        }
+
+        return point.y <= this.p.y
+      },
       onDrag: function(x, y) {
         this.p = new Point(x, y)
         this.draw(context)
+      },
+      toString: function() {
+        return p.toString() + " -> " + q.toString();
       }
     }
   }
@@ -173,7 +205,10 @@
         
         edges.forEach(function(edge) {
           if (edge.intersects(ray)) {
-            sum = sum + 1;
+            var maybeOtherVertex = edge.intersectsVertex(ray)
+            if (maybeOtherVertex == null || !ray.isAbove(maybeOtherVertex)) {
+              sum += 1
+            }
           }
         })
 
@@ -206,24 +241,4 @@
       edge.draw(context);
     })
   }
-
-  // function subclassOf(base) {
-  //   _subclassOf.prototype= base.prototype;
-  //   return new _subclassOf();
-  // }
-  // function _subclassOf() {};
-
-  // function Ray(p, q) {
-  //   Edge.call(this, p, q);
-  // }
-
-  // Ray = new Edge();
-  // Ray.prototype.draw = function(context) {
-  //   context.beginPath();
-  //   context.moveTo(this.p.x, this.p.y);
-  //   context.lineTo(this.q.x, this.q.y);
-  //   context.lineWidth = 20;
-  //   context.stroke();
-  // }
-  // console.log(Ray)
 })();
