@@ -158,12 +158,6 @@
         var o3 = this._orientation(edge.p, edge.q, this.p)
         var o4 = this._orientation(edge.p, edge.q, this.q)
 
-        if (o1 != o2 && o3 != o4) {
-          this.strokeStyle = "#0000FF"
-        } else {
-          this.strokeStyle = "#000000"
-        }
-
         return o1 != o2 && o3 != o4
       },
       intersectsVertex: function(ray) {
@@ -171,24 +165,24 @@
           throw "Ray is not a horizontal line"
         }
 
-        if (this.p.y == ray.p.y) {
-          return this.q
-        } else if (this.q.y == ray.p.y) {
-          return this.p
-        } else {
-          return null
-        }
+        return (this.p.y == ray.p.y || this.q.y == ray.p.y)
       },
-      isAbove: function(point) {
-        if (this.p.y !== this.q.y) {
+      isBelow: function(ray) {
+        if (ray.p.y !== ray.q.y) {
           throw "Ray is not a horizontal line"
         }
 
-        return point.y <= this.p.y
+        return ray.p.y >= this.p.y && ray.p.y >= this.q.y
       },
       onDrag: function(x, y) {
         this.p = new Point(x, y)
         this.draw(context)
+      },
+      color: function() {
+        this.strokeStyle = "#0000FF"
+      },
+      decolor: function() {
+        this.strokeStyle = "#000000"
       },
       toString: function() {
         return p.toString() + " -> " + q.toString();
@@ -203,14 +197,15 @@
         var sum = 0;
         var ray = new Edge(point, new Point(GRID_SIZE, point.y));
         
-        edges.forEach(function(edge) {
-          if (edge.intersects(ray)) {
-            var maybeOtherVertex = edge.intersectsVertex(ray)
-            if (maybeOtherVertex == null || !ray.isAbove(maybeOtherVertex)) {
-              sum += 1
-            }
+        for (i in edges) {
+          edge = edges[i];
+          if (edge.intersects(ray) && this.shouldCount(edge, ray)) {
+            edge.color();
+            sum += 1;
+          } else {
+            edge.decolor()
           }
-        })
+        }
 
         return (sum % 2 == 1) // if odd, then point is inside of polygon
       },
@@ -223,6 +218,9 @@
       },
       contains: function(point) {
         return this.isInside(point) || this.isOnEdge(point);
+      },
+      shouldCount: function(edge, ray) {
+        return !(edge.intersectsVertex(ray) && edge.isBelow(ray));
       }
     }
   }
