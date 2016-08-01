@@ -1,6 +1,9 @@
 (function() {
   var canvas = document.getElementById('canvas')
   var context = canvas.getContext('2d');
+  var clickedElement = null;
+  var mouseDown = false;
+  var ray = null;
 
   // resize the canvas to fill browser window dynamically
   window.addEventListener('resize', resizeCanvas, false);
@@ -31,8 +34,10 @@
     if (points.length > 0 && points[0].detectClick(x, y)) {
       points.push(points[0]);
       polygon = new Polygon(edges);
+      canvas.addEventListener("mousedown", mouseDownListener);
       canvas.addEventListener("mousemove", mouseMoveListener);
-      canvas.removeEventListener("click", clickListener)
+      canvas.addEventListener("mouseup", mouseUpListener);
+      canvas.removeEventListener("click", clickListener);
     } else {
       points.push(new Point(x, y));
     }
@@ -44,11 +49,31 @@
     draw();
   }
 
+  function mouseDownListener(e) {
+    mouseDown = true;
+    
+    points.forEach(function(point){
+      if (point.detectClick(e.x, e.y)) {
+        clickedElement = point;
+      }
+    });
+
+    if (clickedElement == null) {
+      var ray = new Edge(new Point(e.x, e.y), new Point(GRID_SIZE, e.y));
+      clickedElement = ray;
+    }
+  }
+
+  function mouseUpListener(e) {
+    clickedElement = null;
+    mouseDown = false;
+  }
+
   function mouseMoveListener(e) {
     var x = e.x, y = e.y;
     var cursorPosition = new Point(x, y);
-
     draw();
+
     if (polygon.contains(cursorPosition)) {
       context.fillStyle = "#FF0000";
       context.fillText("You are in!",100,100);
@@ -56,7 +81,13 @@
       context.fillStyle = "#0000FF";
       context.fillText("You are out!",100,100);
     }
-    cursorPosition.draw(context);
+
+    if (!mouseDown) {
+      cursorPosition.draw(context);
+    } else if (mouseDown && clickedElement) {
+      clickedElement.onDrag(cursorPosition.x, cursorPosition.y);
+      clickedElement.draw(context);
+    }
   }
 
   function Point(x, y) {
@@ -73,6 +104,10 @@
         context.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
         context.linewidth = 15;
         context.fill();
+      },
+      onDrag: function(x, y) {
+        this.x = x;
+        this.y = y;
       }
     };
   }
@@ -81,6 +116,7 @@
     return {
       p: p,
       q: q,
+      strokeStyle: "#000000",
       midpoint: function() {
         return Point((p.x + q.x) / 2, (p.y + q.y) / 2);
       },
@@ -91,6 +127,7 @@
       },
       draw: function(context) {
         context.beginPath();
+        context.strokeStyle = this.strokeStyle;
         context.moveTo(this.p.x, this.p.y);
         context.lineTo(this.q.x, this.q.y);
         context.lineWidth = 2;
@@ -112,7 +149,17 @@
         var o3 = this._orientation(edge.p, edge.q, this.p)
         var o4 = this._orientation(edge.p, edge.q, this.q)
 
+        if (o1 != o2 && o3 != o4) {
+          this.strokeStyle = "#0000FF"
+        } else {
+          this.strokeStyle = "#000000"
+        }
+
         return o1 != o2 && o3 != o4
+      },
+      onDrag: function(x, y) {
+        this.p = new Point(x, y)
+        this.draw(context)
       }
     }
   }
@@ -122,7 +169,7 @@
       edges: edges,
       isInside: function(point) {
         var sum = 0;
-        var ray = new Edge(point, new Point(GRID_SIZE, GRID_SIZE));
+        var ray = new Edge(point, new Point(GRID_SIZE, point.y));
         
         edges.forEach(function(edge) {
           if (edge.intersects(ray)) {
@@ -159,4 +206,24 @@
       edge.draw(context);
     })
   }
+
+  // function subclassOf(base) {
+  //   _subclassOf.prototype= base.prototype;
+  //   return new _subclassOf();
+  // }
+  // function _subclassOf() {};
+
+  // function Ray(p, q) {
+  //   Edge.call(this, p, q);
+  // }
+
+  // Ray = new Edge();
+  // Ray.prototype.draw = function(context) {
+  //   context.beginPath();
+  //   context.moveTo(this.p.x, this.p.y);
+  //   context.lineTo(this.q.x, this.q.y);
+  //   context.lineWidth = 20;
+  //   context.stroke();
+  // }
+  // console.log(Ray)
 })();
