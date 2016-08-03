@@ -3,30 +3,30 @@
   var context = canvas.getContext('2d');
   var clickedElement = null;
   var mouseDown = false;
-  var ray = null;
 
   // resize the canvas to fill browser window dynamically
   window.addEventListener('resize', resizeCanvas, false);
 
-  var points = [], edges = [], polygon = null, polygonClosed = false;
-  const GRID_SIZE = 10000;
+  var points = [], edges = [], texts = [], polygon = null, polygonClosed = false;
+  var ray = new Ray();
+
+  const GRID_SIZE = 2000, IN_COLOR = "#83AA30", OUT_COLOR = "#E04500", HIGHLIGHT_COLOR = "#1499D3";
 
   canvas.addEventListener("click", clickListener);
+  canvas.addEventListener("mousemove", mouseMoveListener);
+
+  function initialize() {
+    texts[0] = new Text("PLEASE DRAW SHAPE", 100, 100);
+    draw();
+  }
+  initialize();
 
   function resizeCanvas() {
-          canvas.width = window.innerWidth;
-          canvas.height = window.innerHeight;
-          draw(); 
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+    draw(); 
   }
   resizeCanvas();
-
-  function addText() {
-    context.font = "30px Arial";
-    if (polygon == null) {
-      context.fillText("Click to draw a polygon!",100,100);
-    }
-  }
-  addText();
 
   function clickListener(e) {
     var x = e.x, y = e.y;
@@ -65,7 +65,6 @@
     });
 
     if (clickedElement == null) {
-      var ray = new Edge(new Point(e.x, e.y), new Point(GRID_SIZE, e.y));
       clickedElement = ray;
     }
   }
@@ -78,21 +77,39 @@
   function mouseMoveListener(e) {
     var x = e.x, y = e.y;
     var cursorPosition = new Point(x, y);
-    draw();
+    ray.onDrag(e.x, e.y)
 
-    if (polygon.contains(cursorPosition)) {
-      context.fillStyle = "#FF0000";
-      context.fillText("You are in!",100,100);
-    } else {
-      context.fillStyle = "#0000FF";
-      context.fillText("You are out!",100,100);
+    if (polygon) {
+      if (polygon.contains(cursorPosition)) {
+        texts[0] = new Text("OUT", 100, 100);
+        cursorPosition.fillStyle = IN_COLOR;
+      } else {
+        texts[0] = new Text("IN", 100, 100);
+        cursorPosition.fillStyle = OUT_COLOR;
+      }
     }
 
-    if (!mouseDown) {
-      cursorPosition.draw(context);
-    } else if (mouseDown && clickedElement) {
+    draw();
+    cursorPosition.draw(context);
+
+    if (mouseDown && clickedElement) {
       clickedElement.onDrag(cursorPosition.x, cursorPosition.y);
       clickedElement.draw(context);
+    }
+  }
+
+  function Text(string, x, y) {
+    return {
+      string: string,
+      x: x,
+      y: y,
+      fillStyle: "#FFFFFF",
+      fontStyle: "50px Roboto Slab",
+      draw: function(context) {
+        context.font = this.fontStyle
+        context.fillStyle = this.fillStyle;
+        context.fillText(this.string, this.x, this.y);
+      }
     }
   }
 
@@ -101,6 +118,7 @@
       x: x,
       y: y,
       radius: 8,
+      fillStyle: "#FFFFFF",
       detectClick: function(x, y) {
         return (y > this.y - 2 * this.radius && y < this.y + 2 * this.radius 
         && x > this.x - 2 * this.radius && x < this.x + 2 * this.radius);
@@ -109,6 +127,7 @@
         context.beginPath();   
         context.arc(this.x, this.y, this.radius, 0, 2*Math.PI);
         context.linewidth = 15;
+        context.fillStyle = this.fillStyle;
         context.fill();
       },
       onDrag: function(x, y) {
@@ -121,11 +140,35 @@
     };
   }
 
+  function Ray() {
+    return {
+      p: null,
+      q: null,
+      strokeStyle: "#FFFFFF",
+      draw: function(context) {
+        context.beginPath();
+        context.strokeStyle = this.strokeStyle;
+        context.moveTo(this.p.x, this.p.y);
+        context.lineTo(this.q.x, this.q.y);
+        context.lineWidth = 4;
+        context.stroke();
+      },
+      onDrag: function(x, y) {
+        this.p = new Point(x, y)
+        this.q = new Point(GRID_SIZE, y)
+        this.draw(context)
+      },
+      toString: function() {
+        return p.toString() + " -> " + q.toString();
+      }
+    }
+  }
+
   function Edge(p, q) {
     return {
       p: p,
       q: q,
-      strokeStyle: "#000000",
+      strokeStyle: "#FFF",
       midpoint: function() {
         return Point((p.x + q.x) / 2, (p.y + q.y) / 2);
       },
@@ -139,7 +182,7 @@
         context.strokeStyle = this.strokeStyle;
         context.moveTo(this.p.x, this.p.y);
         context.lineTo(this.q.x, this.q.y);
-        context.lineWidth = 2;
+        context.lineWidth = 4;
         context.stroke();
       },
       _orientation: function(p1, p2, p3) {
@@ -179,10 +222,10 @@
         this.draw(context)
       },
       color: function() {
-        this.strokeStyle = "#0000FF"
+        this.strokeStyle = HIGHLIGHT_COLOR;
       },
       decolor: function() {
-        this.strokeStyle = "#000000"
+        this.strokeStyle = "#FFFFFF"
       },
       toString: function() {
         return p.toString() + " -> " + q.toString();
@@ -195,8 +238,6 @@
       edges: edges,
       isInside: function(point) {
         var sum = 0;
-        var ray = new Edge(point, new Point(GRID_SIZE, point.y));
-        
         for (i in edges) {
           edge = edges[i];
           if (edge.intersects(ray) && this.shouldCount(edge, ray)) {
@@ -207,7 +248,13 @@
           }
         }
 
-        return (sum % 2 == 1) // if odd, then point is inside of polygon
+        if (sum % 2 == 1) {
+          ray.strokeStyle = IN_COLOR
+          return true
+        } else {
+          ray.strokeStyle = OUT_COLOR
+          return false
+        }
       },
       isOnEdge: function(point) {
         edges.forEach(function(edge) {
@@ -228,10 +275,11 @@
   function draw() {
     context.clearRect(0, 0, canvas.width, canvas.height);
 
-    addText();
+    texts.forEach(function(text) {
+      text.draw(context)
+    })
 
     points.forEach(function(point) {
-      context.fillStyle = "#000"
       point.draw(context);
     })
 

@@ -2,3 +2,8 @@
   margin: 0;
   padding: 0;
 }
+
+canvas {
+  background-color: #3D3D3D;
+  cursor: none;
+}
