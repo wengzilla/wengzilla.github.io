@@ -81,10 +81,10 @@
 
     if (polygon) {
       if (polygon.contains(cursorPosition)) {
-        texts[0] = new Text("OUT", 100, 100);
+        texts[0] = new Text("IN", 100, 100);
         cursorPosition.fillStyle = IN_COLOR;
       } else {
-        texts[0] = new Text("IN", 100, 100);
+        texts[0] = new Text("OUT", 100, 100);
         cursorPosition.fillStyle = OUT_COLOR;
       }
     }
