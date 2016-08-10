@@ -1,26 +1,37 @@
 var points = [];
 var curvePoints = [];
 var counter = 0;
+var peakLambda = 0;
 const RADIUS = 10;
+const POINT_COLOR = 255;
+const CURVE_COLOR = [10, 100, 100];
+const LINE_COLOR = [255, 255, 255]
 
 function setup() { // **change** void setup() to function setup()
-    var canvas = createCanvas(640, 640); // **change** size() to createCanvas()
+    var canvas = createCanvas(windowWidth, windowHeight);
     canvas.mousePressed(addPoint);
 
-    stroke(0); // stroke() is the same
+    stroke(255); // stroke() is the same
 }
 
 function draw() {
-    background(255); // clears background every refresh
+    background(0); // clears background every refresh
 
     // draw points and line segments
-    var positions = generatePositions(points, getLambda(counter++), []);
+    var lambda = getLambda(counter++)
+    var positions = generatePositions(points, lambda, []);
 
     positions.forEach(function(levels) {
         levels.forEach(function(currPoint) {
             drawPoints(levels);
             drawLines(levels);
-            addPointToCurve(levels);
+            if (levels.length == 1 && peakLambda < lambda) {
+                // if there is only one point in levels, then it acts
+                // as the curve point.
+
+                addPointToCurve(levels);
+                peakLambda = lambda;
+            }
         })
     })
 
@@ -28,15 +39,19 @@ function draw() {
     drawCurve(curvePoints);
 }
 
+function windowResized() {
+    resizeCanvas(windowWidth, windowHeight);
+}
+
 function drawPoints(points) {
-    fill(0);
+    fill(POINT_COLOR);
     points.forEach(function(point) {
         ellipse(point.x, point.y, RADIUS)
     })
 }
 
 function drawLines(points) {
-    noFill();
+    setLineStyle();
     beginShape();
     points.forEach(function(point) {
         vertex(point.x, point.y)
@@ -45,7 +60,7 @@ function drawLines(points) {
 }
 
 function drawCurve(points) {
-    noFill();
+    setCurveStyle();
     beginShape();
     points.forEach(function(curve_point) {
         curveVertex(curve_point.x, curve_point.y, 10)
@@ -91,20 +106,28 @@ Point.prototype.toString = function() {
 }
 
 function getLambda(counter) {
-    return (Math.sin(counter / 100) + 1) / 2;
+    return (-1 * Math.cos(counter / 100) + 1) / 2;
 }
 
 function addPointToCurve(levels) {
-    // if there is only one point in levels, then it acts
-    // as the curve point.
-    if (levels.length == 1) {
-        if (curvePoints.length < 1000) {
-            curvePoints.push(levels[0]);
-        }
-    }
+    curvePoints.push(levels[0]);
 }
 
 function addPoint(e) {
-    curvePoints = []
+    curvePoints = [];
+    counter = 0;
+    peakLambda = 0;
     points.push(new Point(e.x, e.y));
+}
+
+function setLineStyle() {
+    noFill();
+    stroke(LINE_COLOR);
+    strokeWeight(2);
+}
+
+function setCurveStyle() {
+    noFill();
+    stroke(CURVE_COLOR);
+    strokeWeight(5);
 }
