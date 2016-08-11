@@ -1,50 +1,64 @@
 var points = [];
-var curvePoints = [];
-var counter = 0;
-var peakLambda = 0;
+var curvePoints, counter, peakLambda;
 const RADIUS = 10;
-const POINT_COLOR = 255;
-const CURVE_COLOR = [10, 100, 100];
-const LINE_COLOR = [255, 255, 255]
+const CURVE_COLOR = [3, 101, 140];
+const COUNTER_SPEED = 150;
+var POINT_COLOR;
+var drawMode = false;
 
-function setup() { // **change** void setup() to function setup()
+function setup() {
     var canvas = createCanvas(windowWidth, windowHeight);
     canvas.mousePressed(addPoint);
-
-    stroke(255); // stroke() is the same
+    frameRate(60);
+    initialize();
 }
 
 function draw() {
-    background(0); // clears background every refresh
+    if (!drawMode) {
+        background(0); // clears background every refresh
+    }
 
     // draw points and line segments
-    var lambda = getLambda(counter++)
+    var lambda = getLambda(counter)
     var positions = generatePositions(points, lambda, []);
+
+    console.log(positions)
+
+    if (!drawMode || loopCount() < 2) {
+        counter++;
+    }
 
     positions.forEach(function(levels) {
         levels.forEach(function(currPoint) {
-            drawPoints(levels);
+            if (!drawMode) {
+                drawPoints(levels);
+            }
+
             drawLines(levels);
-            if (levels.length == 1 && peakLambda < lambda) {
+
+            if (levels.length == 1) {
                 // if there is only one point in levels, then it acts
                 // as the curve point.
-
-                addPointToCurve(levels);
-                peakLambda = lambda;
+                if (loopCount() < 1) {
+                    addPointToCurve(levels);
+                }
             }
         })
     })
 
     // draw curve
-    drawCurve(curvePoints);
+    if (!drawMode) {
+        drawCurve(curvePoints);
+    }
 }
 
 function windowResized() {
     resizeCanvas(windowWidth, windowHeight);
+    initialize();
 }
 
 function drawPoints(points) {
-    fill(POINT_COLOR);
+    setPointStyle();
     points.forEach(function(point) {
         ellipse(point.x, point.y, RADIUS)
     })
@@ -106,7 +120,7 @@ Point.prototype.toString = function() {
 }
 
 function getLambda(counter) {
-    return (-1 * Math.cos(counter / 100) + 1) / 2;
+    return (-1 * Math.cos(Math.PI * (counter / COUNTER_SPEED)) + 1) / 2;
 }
 
 function addPointToCurve(levels) {
@@ -114,20 +128,52 @@ function addPointToCurve(levels) {
 }
 
 function addPoint(e) {
-    curvePoints = [];
-    counter = 0;
-    peakLambda = 0;
+    initialize();
     points.push(new Point(e.x, e.y));
 }
 
 function setLineStyle() {
     noFill();
     stroke(LINE_COLOR);
-    strokeWeight(2);
+    strokeWeight(1);
 }
 
 function setCurveStyle() {
     noFill();
     stroke(CURVE_COLOR);
     strokeWeight(5);
+}
+
+function setPointStyle() {
+    noStroke();
+    fill(POINT_COLOR);
+}
+
+function initialize() {
+    curvePoints = [];
+    counter = 0;
+    peakLambda = 0;
+    background(0);
+
+    if (drawMode) {
+        LINE_COLOR = [255, 255, 255, 1]; // low opacity
+        POINT_COLOR = [0, 0, 0, 1];
+    } else {
+        LINE_COLOR = [255, 255, 255];
+        POINT_COLOR = [255, 255, 255];
+    }
+}
+
+function keyPressed() {
+    if (keyCode == ENTER) {
+        drawMode = !drawMode
+        initialize();
+    } else if (keyCode == ESCAPE) {
+        points = [];
+        initialize();
+    }
+}
+
+function loopCount() {
+    return Math.floor(counter / COUNTER_SPEED);
 }
