@@ -1,11 +1,100 @@
 <html>
   <head>
     <title>Ed Weng Demos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            animation: {
+              'text': 'text 5s ease infinite',
+              'text-slide': 'text-slide 12.5s cubic-bezier(0.83, 0, 0.17, 1) infinite',
+            },
+            keyframes: {
+              'text': {
+                '0%, 100%': {
+                  'background-size': '200% 200%',
+                  'background-position': 'left center',
+                },
+                '50%': {
+                  'background-size': '200% 200%',
+                  'background-position': 'right center',
+                },
+              },
+              'text-slide': {
+                    '0%, 16%': {
+                        transform: 'translateY(0%)',
+                    },
+                    '20%, 36%': {
+                        transform: 'translateY(-16.66%)',
+                    },
+                    '40%, 56%': {
+                        transform: 'translateY(-33.33%)',
+                    },
+                    '60%, 76%': {
+                        transform: 'translateY(-50%)',
+                    },
+                    '80%, 96%': {
+                        transform: 'translateY(-66.66%)',
+                    },
+                    '100%': {
+                        transform: 'translateY(-83.33%)',
+                    },
+                },  
+            },
+          },
+        },
+      }
+    </script>
   <head>
-  <body>
-    <ul>
-      <li><a href="point_in_polygon/index.html">Crossing Number Algorithm</a></li>
-      <li><a href="bezier/index.html">Animated Bezier Curves</a></li>
-    </ul>
+  <body class="bg-slate-900 text-slate-200">
+    <div class="container mx-auto md:w-2/3">
+      <div class="flex justify-center">
+        <div class="w-full">
+          <img src="headshot.jpg" class="rounded-full w-36 mx-auto my-10" />
+          <div class="font-extrabold text-3xl md:text-4xl [text-wrap:balance]">Hi, I'm Ed. I'm a
+            <span class="text-indigo-500 inline-flex flex-col h-[calc(theme(fontSize.3xl)*theme(lineHeight.tight))] md:h-[calc(theme(fontSize.4xl)*theme(lineHeight.tight))] overflow-hidden">
+              <ul class="block text-left leading-tight [&_li]:block animate-text-slide">
+                <li class="animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent">builder.</li>
+                <li class="animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent">product manager.</li>
+                <li class="animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent">crypto degen.</li>
+                <li class="animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent">Michigander.</li>
+                <li class="animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent">crossword enjoyooor.</li>
+                <li class="animate-text bg-gradient-to-r from-teal-500 via-purple-500 to-orange-500 bg-clip-text text-transparent" aria-hidden="true">builder.</li>
+              </ul>
+            </span>
+          </div>
+          <div class="flex justify-center space-x-4 mt-4">
+            <a href="https://www.linkedin.com/in/edweng" target="_blank" class="hover:text-blue-600">
+              <i class="fab fa-linkedin text-2xl"></i>
+            </a>
+            <a href="https://github.com/wengzilla" target="_blank" class="hover:text-blue-600">
+              <i class="fab fa-github text-2xl"></i>
+            </a>
+            <a href="https://x.com/wengzilla" target="_blank" class="hover:text-blue-600">
+              <i class="fab fa-x-twitter text-2xl"></i>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="justify-center mt-8">
+        <div class="w-full">
+          <p class="mb-4">
+            Hi! I'm Ed. I'm a co-founder at
+            <a href="https://hypelab.com/" target="_blank" class="text-blue-500 underline">HypeLab</a>, where we're bringing ad monetization to web3. Our hope is to create a new, sustainable
+            stream of revenue for builders in crypto and maybe, <span class="italic">just maybe</span>, make advertising something viewers love. If that sounds interesting to you, <a href="mailto:ed@hypelab.com" target="_blank" class="text-blue-500 underline">reach out</a>!
+          </p>
+
+          <p class="mb-4">These days, I spend most of my day writing code, managing a team of really smart people, and talking to customers. Before this, I was at Google working on
+            <a href="https://waymo.com" target="_blank" class="text-blue-500 underline">self-driving cars</a> and <a href="https://admob.google.com/home/" target="_blank" class="text-blue-500 underline">mobile app monetization</a>.
+          </p>
+
+          <p class="mb-4">Outside of work, I love thinking about side hustles, solving NYT Crosswords (1,657 and counting), and trying to run faster.</p>
+        </div>
+      </div>
+    </div>
   </body>
 </html>
+
